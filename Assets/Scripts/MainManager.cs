@@ -11,14 +11,18 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+
+    public Text playerNicknameText; // Player nickname UI text field
+    public Text highScoreText; // High score UI text field (score and nickname)
+
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
+    public int m_Points;
     
     private bool m_GameOver = false;
 
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -36,6 +40,22 @@ public class MainManager : MonoBehaviour
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+
+        Debug.Log("<color=red>START MainManager.cs</color>");
+        Debug.Log(" -> Current player : " + DataManager.Instance.playerNickname);
+        Debug.Log(" -> High score : " + DataManager.Instance.highScorePlayerNickname + DataManager.Instance.highScore);
+        // Display the nickname as persistent data from DataManager Instance
+        playerNicknameText.text = "Current player : " + DataManager.Instance.playerNickname;
+        // Display the high score as persistent data from DataManager Instance
+        if (DataManager.Instance.highScore > 0)
+        {
+            highScoreText.text = "High score : " + DataManager.Instance.highScorePlayerNickname + " - " + DataManager.Instance.highScore;
+        }
+        else 
+        {
+            highScoreText.text = "No high score yet!";
+        }
+        
     }
 
     private void Update()
@@ -72,5 +92,36 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+        // Update the high score after a game over
+        UpdateHighScore();
+    }
+
+    // Go back to the menu
+    public void GoToMenu()
+    {
+        // Load scene
+        SceneManager.LoadScene(0);
+    }
+
+    // Update the high score after a game over
+    public void UpdateHighScore()
+    {
+        // If points > high score saved
+        if (m_Points > DataManager.Instance.highScore)
+        {
+            Debug.Log("<b>New high score detected</b> : " + m_Points);
+            // Display text info
+            highScoreText.text = "High score : " + DataManager.Instance.playerNickname + " - " + m_Points;
+            // Save highScore and highScorePlayerNickname as persistent data
+            DataManager.Instance.highScore = m_Points;
+            DataManager.Instance.highScorePlayerNickname = DataManager.Instance.playerNickname;
+            //- Save the high score as persistent data in JSON file
+            DataManager.Instance.SaveHighScore(); 
+
+            // Launch high score scene
+            SceneManager.LoadScene(2);
+        }
+
     }
 }
